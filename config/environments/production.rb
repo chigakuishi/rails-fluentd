@@ -83,4 +83,19 @@ Rails.application.configure do
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
+  config.logger = Logger.new(config.paths["log"].first)
+  config.logger.formatter = Logger::Formatter.new
+  class Logger
+    class Formatter
+      def call(severity, time, progname, msg)
+        if msg.class.to_s == "String"
+          msg = msg.gsub(/\n/, "\\n")
+          if msg.present? && !msg.include?("assets") && !msg.include?("erb")
+            format = "[%s %d] %5s -- %s: \'%s\'\n"
+            format % ["#{time.strftime('%Y-%m-%d %H:%M:%S')}.#{'%06d' % time.usec.to_s}",$$, severity, progname, msg2str(msg)]
+          end
+        end
+      end
+    end
+  end
 end

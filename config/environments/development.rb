@@ -52,4 +52,19 @@ Rails.application.configure do
   # routes, locales, etc. This feature depends on the listen gem.
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
   config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
+  config.logger = Logger.new(config.paths["log"].first)
+  config.logger.formatter = Logger::Formatter.new
+  class Logger
+    class Formatter
+      def call(severity, time, progname, msg)
+        if msg.class.to_s == "String"
+          msg = msg.gsub(/\n/, "改行")
+          if msg.present? && !msg.include?("assets") && !msg.include?("erb")
+            format = "[%s %d] %5s -- %s: \'%s\'\n"
+            format % ["#{time.strftime('%Y-%m-%d %H:%M:%S')}.#{'%06d' % time.usec.to_s}",$$, severity, progname, msg2str(msg)]
+          end
+        end
+      end
+    end
+  end
 end
